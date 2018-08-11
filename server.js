@@ -17,14 +17,17 @@ var PORT = process.env.PORT || 8080;
 //---------------------------------------------------------------------
 //Integrates bodyparser into the express server
 //---------------------------------------------------------------------
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.text());
+app.use(bodyParser.json({ type: "application/vnd.api+json" }));
+app.use(express.static(__dirname + '/app/public'));
 
 //---------------------------------------------------------------------
 //Used to setup a router in order to handle the necessary routes
 //---------------------------------------------------------------------
-require("./routes/apiRoutes")(app);
-require("./routes/htmlRoutes")(app);
+require("./app/routing/apiRoutes")(app);
+require("./app/routing/htmlRoute")(app);
 
 //--------------------------------------------------------------------
 //Sets the app listener to the defined port variable above

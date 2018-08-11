@@ -1,34 +1,48 @@
-
-var friendData = require("../data/friends");
+var friendData = require('../data/friends.js');
 
 module.exports = function (app) {
 
-  app.get("/api/friends", function (req, res) {
+  app.get('/api/friends', function (req, res) {
     res.json(friendData);
   });
 
-  app.post("/api/friends", function (req, res) {
-    var comparisonArray = [];
-    var differenceArray = [];
-    var userInput = {
-      name: req.body.name,
-      photo: req.body.photo,
-      scores: []
-    };
-    var scoresArray = [];
-    for(var i=0; i < req.body.scores.length; i++){
-      scoresArray.push( parseInt(req.body.scores[i]) )
-    }
-    userInput.scores = scoresArray;
-    
-    for (i = 0; i < friendData.length; i++) {
-      differenceArray.push(Math.abs(userInput[i].scores - friendData[i].scores))
-      var totalDifference = differenceArray.reduce(function (a, b) {
-        return a + b;
+  app.post('/api/friends', function (req, res) {
+
+    var thisUser = req.body;
+    var differences = [];
+
+    if (friendData.length > 1) {
+
+      friendData.forEach(function (user) {
+        var totalDifference = 0;
+
+        for (var i = 0; i < thisUser.answers.length; i++) {
+          var otherAnswer = user.scores[i];
+          var thisAnswer = thisUser.answers[i];
+          var difference = +otherAnswer - +thisAnswer;
+          totalDifference += Math.abs(difference);
+        }
+
+        differences.push(totalDifference);
       });
-      comparisonArray.push(totalDifference);
-      differenceArray = [];
-    };
-    comparisonArray.sort(function (a, b) { return b.scoreDifference - a.scoreDifference; });
+
+      var minimumDifference = Math.min.apply(null, differences);
+
+      var bestMatches = [];
+
+      for (var i = 0; i < differences.length; i++) {
+        if (differences[i] === minimumDifference) {
+          bestMatches.push(friendData[i]);
+        }
+      }
+
+      res.json(bestMatches);
+
+    } else {
+      res.json(friendData);
+    }
+
+    friendData.push(thisUser);
+
   });
 };
